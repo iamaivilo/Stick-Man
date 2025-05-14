@@ -19,8 +19,8 @@ class Game:
         h = self.bg.height()
         for x in range(0,5):
             for y in range(0,5):
-                self.canvas.create_image(x * w,y * h, 
-                                         image = self.bg, anchor = 'nw')
+                self.canvas.create_image(x * w,y * h, image = self.bg, anchor = 'nw')
+                    
         self.sprites = []
         self.running = True
 
