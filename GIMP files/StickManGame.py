@@ -3,7 +3,7 @@ import random
 import time
 
 class Coords:
-    def __init__(self):
+    def __init__(self, x1 = 0, x2 = 0, y2 = 0, y1 = 0):
         self.x1 = x1
         self.x2 = x2
         self.y1 = y1
@@ -38,7 +38,45 @@ def collided_left(co1,co2):
         if co1.x1 >= co2.x1 and co1.x1 <= co2.x2:
             return True
     return False
-        
+
+def collided_right(co1,co2):
+    if within_y(co1,co2):
+        if co1.y1 >= co2.y1 and co1.y1 <= co2.y2:
+            return True
+    return False
+
+def collided_top(co1,co2):
+    if within_x(co1,co2):
+        if co1.y1 >= co2.y1 and co1.y1 <= co2.y2:
+            return True
+    return False
+
+def collided_bottom(co1,co2):
+    if within_x(co1,co2):
+        y_calc = co1.y2 + y
+        if y_calc >= co2.y1 and y_calc <= co2.y2:
+            return True
+    return False
+
+class Sprite:
+    def __init__(self,game):
+        self.game = game
+        self.endgame = False
+        self.coordinates = None
+
+    def move(self):
+        pass
+
+    def coords(self):
+        return self.coordinates
+
+class PlatformSprite(Sprite):
+    def __init__(self,game,photo_image,x,y,width,height):
+        Sprite.__init__(self,game)
+        self.photo_image = photo_image
+        self.image = game.canvas.create_image(x,y,image = self.photo_image,anchor = 'nw')
+        self.coordinates = Coords(x,y,x + width, y + height)
+
 class Game:
     def __init__(self):
         self.tk = Tk()
@@ -72,4 +110,6 @@ class Game:
             time.sleep(0.01)
 
 g = Game()
+platform1 = PlatformSprite(g, PhotoImage(file = 'platform1.gif'),0,480,100,10)
+g.sprites.append(platform1)
 g.mainloop()
