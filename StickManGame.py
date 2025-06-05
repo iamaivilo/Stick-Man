@@ -106,6 +106,49 @@ def jump(self,evt):
         self.x = -4
         self.jump_count = 0
 
+def animate(self):
+    if self.x != 0 and self.y == 0:
+        if time.time() - self.last_time > 0.1:
+            self.last_time = time.time()
+            self.current_image += self.current_image_add
+            if self.current_image >= 2:
+                self.current_image_add = -1
+            if self.current_image <= 0:
+                self.current_image_add = 1
+            if self.x < 0:
+                if self.y != 0:
+                    self.game.canvas.itemconfig(self.image,image = self.images_left[2])
+                else:
+                    self.game.canvas.itemconfig(self.image,image = [self.current_image])
+            elif self.x > 0:
+                if self.y != 0:
+                    self.game.canvas.itemconfig(self.image,image = self.images_right[2])
+            else:
+                 self.game.canvas.itemconfig(self.image,image = [self.current_image])
+
+def coords(self):
+    xy = self.game.canvas.coords(self.image)
+    self.coordinates.x1 = xy[0]
+    self.coordinates.y1 = xy[1]
+    self.coordinates.x2 = xy[0] + 27
+    self.coordinates.y1 = xy[1] + 30
+    return self.coordinates
+
+def move(self):
+    self.animate()
+    if self.y < 0:
+        self.jump_count += 1
+        if self.jump_count >20:
+            self.y = 4
+    if self.y > 0:
+        self.jump_count -= 1
+    co = self.coords()
+    left = True
+    right = True
+    top = True
+    bottom = True
+    falling = True
+
 class Game:
     def __init__(self):
         self.tk = Tk()
