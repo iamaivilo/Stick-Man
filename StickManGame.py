@@ -2,13 +2,6 @@ from tkinter import *
 import random
 import time
 
-class Coords:
-    def __init__(self, x1 = 0, x2 = 0, y2 = 0, y1 = 0):
-        self.x1 = x1
-        self.x2 = x2
-        self.y1 = y1
-        self.y2 = y2
-        
 def within_x (co1, co2):
     if co1.x1 > co2.x1 and co1.x1 < co2.x2:
         return True
@@ -20,6 +13,13 @@ def within_x (co1, co2):
         return True
     else : 
         return False
+    
+class Coords:
+    def __init__(self, x1 = 0, x2 = 0, y2 = 0, y1 = 0):
+        self.x1 = x1
+        self.x2 = x2
+        self.y1 = y1
+        self.y2 = y2
     
 def within_y (co1, co2):
     if co1.y1 > co2.y1 and co1.y1 < co2.y2:
@@ -51,7 +51,7 @@ def collided_top(co1,co2):
             return True
     return False
 
-def collided_bottom(co1,co2):
+def collided_bottom(y,co1,co2):
     if within_x(co1,co2):
         y_calc = co1.y2 + y
         if y_calc >= co2.y1 and y_calc <= co2.y2:
@@ -69,13 +69,42 @@ class Sprite:
 
     def coords(self):
         return self.coordinates
-
+    
 class PlatformSprite(Sprite):
     def __init__(self,game,photo_image,x,y,width,height):
         Sprite.__init__(self,game)
         self.photo_image = photo_image
         self.image = game.canvas.create_image(x,y,image = self.photo_image,anchor = 'nw')
         self.coordinates = Coords(x,y,x + width, y + height)
+
+class StickFigureSprite(Sprite):
+        def __init__(self,game):
+            Sprite.__init__(self,game)
+            self.images_left = [PhotoImage(file = 'figure-L1.gif'),PhotoImage(file = 'figure-L2.gif'),PhotoImage(file = 'figure-L3.gif')]
+            self.images_right = [PhotoImage(file = 'figure-R1.gif'),PhotoImage(file = 'figure-R2.gif'),PhotoImage(file = 'figure-R3.gif')]
+            self_image = game.canvas.create_image(200,470,image = self.image_left[0], anchor = 'nw')
+            self.x = -2
+            self.y = 0
+            self.current_image = 0
+            self.current_image.add = 1
+            self.jump_count = 0
+            self.last_time = time.time()
+            self.coordinates = Coords()
+            game.canvas.bind_all('<KeyPress-Left>', self.turn_left)
+            game.canvas.bind_all('<KeyPress-Right>', self.turn_right)
+            game.canvas.bind_all('<space>', self.turn_jump)
+
+def turn_left(self,evt):
+    if self.y == 0:
+        self.x = -2
+def turn_left(self,evt):
+    if self.y == 0:
+        self.x = -2
+
+def jump(self,evt):
+    if self.y == 0:
+        self.x = -4
+        self.jump_count = 0
 
 class Game:
     def __init__(self):
@@ -112,4 +141,22 @@ class Game:
 g = Game()
 platform1 = PlatformSprite(g, PhotoImage(file = 'platform1.gif'),0,480,100,10)
 g.sprites.append(platform1)
+platform2 = PlatformSprite(g, PhotoImage(file = 'platform1.gif'),150,440,100,10)
+g.sprites.append(platform2)
+platform3 = PlatformSprite(g, PhotoImage(file = 'platform1.gif'),300,400,100,10)
+g.sprites.append(platform3)
+platform4 = PlatformSprite(g, PhotoImage(file = 'platform1.gif'),300,160,100,10)
+g.sprites.append(platform4)
+platform5 = PlatformSprite(g, PhotoImage(file = 'platform2.gif'),175,350,66,10)
+g.sprites.append(platform5)
+platform6 = PlatformSprite(g, PhotoImage(file = 'platform2.gif'),50,300,66,10)
+g.sprites.append(platform6)
+platform7 = PlatformSprite(g, PhotoImage(file = 'platform2.gif'),170,120,66,10)
+g.sprites.append(platform7)
+platform8 = PlatformSprite(g, PhotoImage(file = 'platform2.gif'),45,60,66,10)
+g.sprites.append(platform8)
+platform9 = PlatformSprite(g, PhotoImage(file = 'platform3.gif'),170,250,32,10)
+g.sprites.append(platform9)
+platform10 = PlatformSprite(g, PhotoImage(file = 'platform3.gif'),230,200,32,10)
+g.sprites.append(platform10)
 g.mainloop()
