@@ -19,8 +19,9 @@ def within_x (co1, co2):
         return False
     
 class Coords:
-    def __init__(self, x1 = 0, x2 = 0, y2 = 0, y1 = 0):
+    def __init__(self, x1 = 0, y1 = 0, x2 = 0, y2 = 0):
         self.x1 = x1
+        self.y1 = y1
         self.x2 = x2
         self.y1 = y1
         self.y2 = y2
@@ -45,7 +46,7 @@ def collided_left(co1,co2):
 
 def collided_right(co1,co2):
     if within_y(co1,co2):
-        if co1.y1 >= co2.y1 and co1.y1 <= co2.y2:
+        if co1.x2 >= co2.x1 and co1.x2 <= co2.x2:
             return True
     return False
 
@@ -79,7 +80,7 @@ class PlatformSprite(Sprite):
         Sprite.__init__(self,game)
         self.photo_image = photo_image
         self.image = game.canvas.create_image(x,y,image = self.photo_image,anchor = 'nw')
-        self.coordinates = Coords(x,y,x + width, y + height)
+        self.coordinates = Coords(x, y, x + width, y + height)
 
 class StickFigureSprite(Sprite):
     def __init__(self,game):
@@ -87,7 +88,7 @@ class StickFigureSprite(Sprite):
         self.images_left = [PhotoImage(file = 'figure-l1.gif'),PhotoImage(file = 'figure-l2.gif'),PhotoImage(file = 'figure-l3.gif')]
         self.images_right = [PhotoImage(file = 'figure-r1.gif'),PhotoImage(file = 'figure-r2.gif'),PhotoImage(file = 'figure-r3.gif')]
         self.image = game.canvas.create_image(200,470,image = self.images_left[0], anchor = 'nw')
-        self.x = -2
+        self.x = 0
         self.y = 0
         self.current_image = 0
         self.current_image_add = 1
@@ -101,16 +102,16 @@ class StickFigureSprite(Sprite):
     def turn_left(self,evt):
         print("turn_left clicked")
         if self.y == 0:
-            self.x = -2
+            self.x = -1
     def turn_right(self,evt):
         print("turn_right clicked")
         if self.y == 0:
-            self.x = 2
+            self.x = 1
 
     def jump(self,evt):
         print("jump clicked")
         if self.y == 0:
-            self.x = -4
+            self.y = -4
             self.jump_count = 0
 
     def animate(self):
@@ -126,19 +127,21 @@ class StickFigureSprite(Sprite):
                     if self.y != 0:
                         self.game.canvas.itemconfig(self.image,image = self.images_left[2])
                     else:
-                        self.game.canvas.itemconfig(self.image,image = [self.current_image])
+                        self.game.canvas.itemconfig(self.image,image = self.images_left[self.current_image])
                 elif self.x > 0:
                     if self.y != 0:
                         self.game.canvas.itemconfig(self.image,image = self.images_right[2])
+                    else:
+                        self.game.canvas.itemconfig(self.image,image = self.images_right[self.current_image])
                 else:
-                    self.game.canvas.itemconfig(self.image,image = [self.current_image])
+                    self.game.canvas.itemconfig(self.image,image = self.images_left[self.current_image])
 
     def coords(self):
         xy = self.game.canvas.coords(self.image)
         self.coordinates.x1 = xy[0]
         self.coordinates.y1 = xy[1]
         self.coordinates.x2 = xy[0] + 27
-        self.coordinates.y1 = xy[1] + 30
+        self.coordinates.y2 = xy[1] + 30
         return self.coordinates
 
     def move(self):
@@ -155,14 +158,14 @@ class StickFigureSprite(Sprite):
         top = True
         bottom = True
         falling = True
-        if self.y > 0 and co.y2 > self.game.canvas_height:
+        if self.y > 0 and co.y2 >= 500:
             self.y = 0
             bottom = False
         elif self.y < 0 and co.y1 <= 0:
             self.y = 0
             top = False
-        if self.x > 0 and co.x2 > self.game.canvas_height:
-            self.y = 0
+        if self.x > 0 and co.x2 >= self.game.canvas_width:
+            self.x = 0
             right = False
         elif self.x < 0 and co.x1 <= 0:
             self.x = 0
@@ -174,7 +177,7 @@ class StickFigureSprite(Sprite):
             if top and self.y < 0 and collided_top(co,sprite_co):
                 self.y = -self.y
                 top = False
-            if bottom and self.y < 0 and collided_bottom(self.y,co,sprite_co):
+            if bottom and self.y > 0 and collided_bottom(self.y,co,sprite_co):
                 self.y = sprite_co.y1 - co.y2
                 if self.y < 0:
                     self.y = 0
@@ -182,18 +185,23 @@ class StickFigureSprite(Sprite):
                 top = False
             if bottom and falling and self.y == 0 and co.y2 < self.game.canvas_height and collided_bottom(1, co, sprite_co):
                 falling = False
-            if bottom and self.x < 0 and collided_left(co,sprite_co):
+            if left and self.x < 0 and collided_left(co,sprite_co):
+                self.x = 0
+                left = False
+            if right and self.x > 0 and collided_right(co,sprite_co):
                 self.x = 0
                 right = False
-            if falling and bottom and self.y == 0 and co.y2 < self.game.canvas_height:
-                self.y = 4
-            self.game.canvas.move(self.image, self.x, self.y)
+        if falling and bottom and self.y == 0 and co.y2 < self.game.canvas_height:
+            self.y = 4
+        self.game.canvas.move(self.image, self.x, self.y)
+
 class Game:
     def __init__(self):
         self.tk = Tk()
         self.tk.title('Mr.Stickman races for the exit')
         self.tk.resizable(0,0)
         self.tk.wm_attributes('-topmost', 1)
+        self.tk.protocol("WM_DELETE_WINDOW", self.on_closing)
         self.canvas = Canvas(self.tk, width = 500, height = 500, highlightthickness = 0)
 
         self.canvas.pack()
@@ -211,13 +219,19 @@ class Game:
         self.running = True
 
     def mainloop(self):
-        while True:
-            if self.running == True:
+        while self.running:
+            try:
                 for sprite in self.sprites:
                     sprite.move()
-            self.tk.update_idletasks()
-            self.tk.update()
+                self.tk.update_idletasks()
+                self.tk.update()
+            except:
+                break
             time.sleep(0.01)
+
+    def on_closing(self):
+        self.running = False
+        self.tk.destroy()
 
 # Main Game code that will use the classes defined above
 g = Game()
